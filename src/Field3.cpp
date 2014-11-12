@@ -70,14 +70,17 @@ double weight_hub(double x, double y){
     
     // return r^(-4)
     return 1.0/r2/r2;
+    //double r2t= r2 + t;
+    //return - 4*t*t*(r2-t)/ pow(r2t,3) - t*t/pow(r2t,2) +2*t/ r2t;
 }
 
-void weight_hub1(double *Xh, double *Yh, double *weights, int N_hub){
+void weight_hub1(double *Xh, double *Yh, double *weights, int N_hub, double t){
   /* weights is an array of length N_hub which stores the weight of each hub.
   */
   for (int i=0; i<N_hub; i++){
     double r2 = distance_squared(Xh[i],Yh[i],0.0,0.0);
-    weights[i] =1.0/r2/r2;
+    double r2t= r2 + t;
+    weights[i] = - 4*t*t*(r2-t)/ pow(r2t,3) - t*t/pow(r2t,2) +2*t/ r2t; //=1.0/r2/r2;
   }
 }
 
@@ -183,7 +186,7 @@ void simulate2d(int id, int N, int N_hub, double Dt_max, double dt) {
 	printf("calculating distance^2 matrix...\n");
 	dists_to_hubs(X,Y, X_hub,Y_hub ,dist2, N, N_hub);
 	printf("distances to hubs computed.\n");
-	weight_hub1(X_hub,Y_hub, wgh, N_hub); // weights of hubs put in wgh
+	//weight_hub1(X_hub,Y_hub, wgh, N_hub); // weights of hubs put in wgh
 	/* Now that we have Gr's and weights we can use them to calculate the degrees
 	*/
 	
@@ -215,6 +218,7 @@ void simulate2d(int id, int N, int N_hub, double Dt_max, double dt) {
   char outs[10];
   cout << "Greens for Dt=\n";
 	for (double Dt=1.0e-7+dt; Dt< Dt_max; Dt+=dt){
+	    weight_hub1(X_hub,Y_hub, wgh, N_hub, Dt); // weights of hubs put in wgh
     	Green1(dist2,grs,N, N_hub, Dt); // takes distances to hubs and puts Green's f's in grs
     	//printf("Greens for Dt=%.4g computed.\n", Dt );
     	int ndt=sprintf(outs,"%.5g, ", Dt);
